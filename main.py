@@ -2,6 +2,7 @@
 
 
 from typing import List
+import json
 
 
 # TODO: Implement validation from user input
@@ -24,6 +25,9 @@ class Debt:
     
     def __str__(self) -> str:
         return f"Name: {self.name}\nBalance: {self.balance}\nInterest Rate: {self.interest_rate * 100}%\nMin Payment: {self.min_payment}"
+
+    def __repr__(self) -> str:
+        return f"Debt(name='{self.name}', balance={self.balance}, interest_rate={self.interest_rate}, min_payment={self.min_payment})"
 
 def get_user_debts() -> List[Debt]:
     debts_complete = False
@@ -88,20 +92,36 @@ def get_debt_free_timeline(debts: List[Debt], monthly_income: float):
         if smallest_debt_index == -1:
             raise Exception('Could not find the smallest debt when it was possible!')
 
-        debts[smallest_debt_index].make_payment(remaining_income)
-        print(f'Month {month_number}: You pay {remaining_income} to {debts[smallest_debt_index].name}')
+        # TODO: Implement a for loop to pay debts 
+
+
+        debt1_remaining_payment = min(debts[smallest_debt_index].balance, remaining_income)
+        debts[smallest_debt_index].make_payment(debt1_remaining_payment)
+        print(f'Month {month_number}: You pay {debt1_remaining_payment} to {debts[smallest_debt_index].name}')
 
         
 
         
-        remaining_income = monthly_income
+        remaining_income += monthly_income
         month_number += 1
         remaining_debt = get_total_debt_amount(debts)
+        for index, debt in enumerate(debts):
+            if debt.balance == 0: continue
+            debts[index] = debt.get_next_month_debt()
 
     print(f'Congratulations, you will be completely debt free on Month {month_number}')
 
     
 if __name__ == "__main__":
-    debts = get_user_debts()
+    # debts = get_user_debts()
+
+    with open('debts.json', 'r') as file:
+        data = json.load(file)
+
+        debts = [Debt(**raw_debt_data) for raw_debt_data in data]
+    
+    print(debts)
+
+    # debts = 
     monthly_income = float(input("Enter the amount of money you can spare for debt payments monthly (Example: 1700): "))
     get_debt_free_timeline(debts, monthly_income)
